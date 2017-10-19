@@ -2,16 +2,14 @@ sudo: required
 language: python
 services:
 - docker
-before_install:
-- docker build -t cloudpassage_halo_python_sdk_slim .
 script:
 - docker build -t ${IMAGE_TAG} -f ${DOCKERFILE_NAME} .
 - docker run -it --rm ${IMAGE_TAG} py.test
 env:
   matrix:
-  - DOCKERFILE_NAME: Dockerfile.ubuntu16_04
+  - DOCKERFILE_NAME: ./Dockerfile.ubuntu16_04
     IMAGE_TAG: cloudpassage-slim-ubu1604:latest
-  - DOCKERFILE_NAME: Dockerfile.ubuntu16_10
+  - DOCKERFILE_NAME: ./Dockerfile.ubuntu16_10
     IMAGE_TAG: cloudpassage-slim-ubu1610:latest
   global:
   - secure: Wao5nLzDrBRifVOxlDG8zhqn03Qh24hiGQqsKjHgmIRXgcgjOS8CxOdaLOALziIvwBcpWyj5/eVoBTSrIDlb8rZC1YCl4aNx5HHL6iMomH5iZRqmgfLFeOt9XtF4VpQcOFkezW0WsUfFt/KQ8fhbHxa2VZVoGmdV0CaruLSCU1o3cTvT05gdE3ax2IEs++y2w84I9kqh+IAzpuwYZgWWHbewM8yEjsCMn09tZSU7YjyBhB3mYGgMzgPiexZ5unK6BJbLHpfyEJBWWBlvzZQoLYkft6ieKEM3UPvMpQhfgviWyT0VifQAEDp+JYoeEzWPbsMnxvX2xQEiCNoh2WxW4wvYM3zyIYLFGEQ7tVmjF+P3gp92+DJY2QNHiJDsoPD1mzrZGzP8uagkgkjTPbOhYqhfCpsecXsgf0Hbn56cJIR8u97GCkem0D6Q2F5nrHDa+FXRXK+zxg26YMR8uUui2sAzcgP8Xh6rK8mMQfW0WIysXbNnaoBXgY8YiP6lMMWSlNW9QW4CdN0kWw11D00I2JSiiATeIOof++7IPmmVcLx4hLYn6qEY/SUNiH9WbCwI8cybAoKqfVTtqnhUGy1BQZukbSruFJ9DDxfcDHi4bnTX9uz8gG+upJQKfjmkNUHADhVIPe1CV6N0jyeyUTPiY7k++d/ivHoVM0OqEsoA2J0=
