@@ -42,3 +42,9 @@ class TestUnitHaloSession(object):
         re_expect = re.compile(r'^\d+\.\d+.*')
         actual = cloudpassage_slim.HaloSession.get_sdk_version()
         assert re_expect.match(actual)
+
+    def test_unit_halo_session_build_url(self):
+        path = "/v100/soadvanced"
+        expected = "https://api.cloudpassage.com/v100/soadvanced"
+        actual = cloudpassage_slim.HaloSession("key", "secret").build_url(path)
+        assert expected == actual

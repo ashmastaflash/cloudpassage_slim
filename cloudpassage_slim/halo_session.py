@@ -5,6 +5,7 @@ import os
 import re
 import ssl
 import urllib
+from urlparse import urlunsplit
 
 
 class HaloSession(object):
@@ -37,6 +38,7 @@ class HaloSession(object):
             self.integration_string = kwargs["integration_string"]
         self.user_agent = self.build_ua_string(self.sdk_version_string,
                                                self.integration_string)
+        self.threads = 5
         self.api_token = None
 
     def authenticate(self):
@@ -70,6 +72,11 @@ class HaloSession(object):
         ua = "{sdk} {integration}".format(sdk=sdk_version_str,
                                           integration=integration_string)
         return ua
+
+    def build_url(self, endpoint):
+        """Build a URL from parts."""
+        url = urlunsplit(("https", self.api_host, endpoint, "", ""))
+        return url
 
     @classmethod
     def get_sdk_version(cls):
