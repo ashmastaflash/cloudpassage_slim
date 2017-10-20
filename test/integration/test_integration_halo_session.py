@@ -39,3 +39,16 @@ class TestIntegrationHaloSession(object):
             print("No API authentication env vars set!")
             print("You must set HALO_API_KEY, HALO_API_SECRET to test this!")
             assert False is True
+
+    def test_build_auth_header(self):
+        halo_key = os.getenv("HALO_API_KEY")
+        halo_secret = os.getenv("HALO_API_SECRET")
+        if None not in [halo_key, halo_secret]:
+            session = cloudpassage_slim.HaloSession(halo_key, halo_secret)
+            header = session.build_header()
+            assert len(header["Authorization"]) > 10  # Auth string present?
+            assert session.api_token is not None
+        else:
+            print("No API authentication env vars set!")
+            print("You must set HALO_API_KEY, HALO_API_SECRET to test this!")
+            assert False is True

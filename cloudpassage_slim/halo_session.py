@@ -69,6 +69,8 @@ class HaloSession(object):
 
     def build_header(self):
         """This builds the header, required for all API interaction."""
+        if self.api_token is None:
+            self.authenticate()
         authstring = "Bearer " + self.api_token
         header = {"Authorization": authstring,
                   "Content-Type": "application/json",
