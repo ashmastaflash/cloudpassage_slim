@@ -1,7 +1,12 @@
 import httplib
 import time
 import urllib
+# import utility
+from exceptions import CloudPassageAuthentication
+from exceptions import CloudPassageAuthorization
 from exceptions import CloudPassageGeneral
+from exceptions import CloudPassageResourceExistence
+from exceptions import CloudPassageValidation
 
 
 class HttpHelper(object):
@@ -27,17 +32,22 @@ class HttpHelper(object):
         return (status_code, reason, body)
 
     def get(self, path, **kwargs):
-        headers = self.session.build_header()
         params = ""
         tries = 0
         if params in kwargs:
             params = kwargs["params"]
         while tries < 3:
-            status_code, reason, body = self.connect("GET", self.session.host,
-                                                     path, headers, params)
-            disposition = self.response_disposition(status_code)
+            headers = self.session.build_header()
+            status_code, reason, body = self.connect("GET",
+                                                     self.session.api_host,
+                                                     path, headers=headers,
+                                                     params=params)
+            disposition, exc = self.response_disposition(status_code, path,
+                                                         reason)
             if disposition == "rekey":
+                print("Session token bad: %s" % self.session.api_token)
                 self.session.authenticate()
+                print("Session token refreshed: %s" % self.session.api_token)
                 tries += 1
                 continue
             elif disposition == "wait":
@@ -45,21 +55,39 @@ class HttpHelper(object):
                 tries += 1
                 continue
             elif disposition == "bad":
-                raise CloudPassageGeneral(reason, code=status_code)
+                raise exc
             elif disposition == "good":
                 break
+        if exc:
+            raise exc  # This catches the fails beyond retries.
         return body
 
     @classmethod
-    def response_disposition(cls, response_code):
+    def response_disposition(cls, response_code, url, resp_text):
         """Return either "good", "bad", "rekey", or "wait"."""
-        disposition = "bad"
+        disposition = "bad"  # Fails if unmatched.
+        exc = CloudPassageGeneral(resp_text)
+        bad_statuses = {400: CloudPassageValidation(resp_text, code=400),
+                        401: CloudPassageAuthentication(resp_text,
+                                                        code=401),
+                        404: CloudPassageResourceExistence(resp_text,
+                                                           code=404,
+                                                           url=url),
+                        403: CloudPassageAuthorization(resp_text,
+                                                       code=403),
+                        422: CloudPassageValidation(resp_text, code=422)}
         if 200 <= response_code < 300:
             disposition = "good"
+            exc = None
         elif response_code == 401:
             disposition = "rekey"
         elif 400 <= response_code < 500:
             disposition = "bad"
+            try:
+                exc = bad_statuses[response_code]
+            except KeyError:
+                # If we don't have a specific exc, leave it CloudPassageGeneral
+                pass
         elif 500 <= response_code <= 599:
             disposition = "wait"
-        return disposition
+        return disposition, exc

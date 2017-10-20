@@ -6,6 +6,7 @@ import re
 import ssl
 import urllib
 from urlparse import urlunsplit
+from exceptions import CloudPassageAuthentication
 
 
 class HaloSession(object):
@@ -54,8 +55,12 @@ class HaloSession(object):
             connection = httplib.HTTPSConnection(self.api_host,
                                                  context=ctx)
         connection.request("POST", '/oauth/access_token', params, headers)
-        response = connection.getresponse().read().decode()
-        self.api_token = json.loads(response)['access_token']
+        response = connection.getresponse()
+        code = response.status
+        body = response.read().decode()
+        if code == 401:  # Bad API key...
+            raise CloudPassageAuthentication(json.dumps(body))
+        self.api_token = json.loads(body)['access_token']
         return True
 
     @classmethod
