@@ -10,11 +10,15 @@ class HttpHelper(object):
         self.session = session
 
     @classmethod
-    def connect(self, method, host, path, headers, params=""):
+    def connect(self, method, host, path, **kwargs):
         """Return a tuple of response code, reason, and page body."""
-        params_enc = urllib.urlencode(dict(params))
+        headers, params = {}, ""
+        if "params" in kwargs:
+            params = urllib.urlencode(dict(kwargs["params"]))
+        if "headers" in kwargs:
+            headers = kwargs["headers"]
         conn = httplib.HTTPSConnection(host)
-        conn.request(method, path, params_enc, headers)
+        conn.request(method, path, params, headers)
         response = conn.getresponse()
         status_code = response.status
         reason = response.reason
