@@ -68,13 +68,9 @@ class HttpHelper(object):
         disposition = "bad"  # Fails if unmatched.
         exc = CloudPassageGeneral(resp_text)
         bad_statuses = {400: CloudPassageValidation(resp_text, code=400),
-                        401: CloudPassageAuthentication(resp_text,
-                                                        code=401),
-                        404: CloudPassageResourceExistence(resp_text,
-                                                           code=404,
+                        404: CloudPassageResourceExistence(resp_text, code=404,
                                                            url=url),
-                        403: CloudPassageAuthorization(resp_text,
-                                                       code=403),
+                        403: CloudPassageAuthorization(resp_text, code=403),
                         422: CloudPassageValidation(resp_text, code=422)}
         if 200 <= response_code < 300:
             disposition = "good"
