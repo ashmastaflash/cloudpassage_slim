@@ -4,7 +4,7 @@ services:
 - docker
 script:
 - docker build -t ${IMAGE_TAG} -f ${DOCKERFILE_NAME} .
-- docker run -it --rm -e HALO_API_KEY=${HALO_API_KEY} -e HALO_API_SECRET=${HALO_API_SECRET} ${IMAGE_TAG} py.test --cov=cloudpassage_slim
+- docker run -it --rm -e HALO_API_KEY=${HALO_API_KEY} -e HALO_API_SECRET=${HALO_API_SECRET} ${IMAGE_TAG} py.test --cov-report term-missing --cov=cloudpassage_slim
 env:
   matrix:
   - DOCKERFILE_NAME: ./Dockerfile.ubuntu16_04
