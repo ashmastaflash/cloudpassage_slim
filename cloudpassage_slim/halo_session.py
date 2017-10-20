@@ -6,6 +6,7 @@ import re
 import ssl
 import urllib
 from urlparse import urlunsplit
+from exceptions import CloudPassageAuthentication
 
 
 class HaloSession(object):
@@ -54,8 +55,12 @@ class HaloSession(object):
             connection = httplib.HTTPSConnection(self.api_host,
                                                  context=ctx)
         connection.request("POST", '/oauth/access_token', params, headers)
-        response = connection.getresponse().read().decode()
-        self.api_token = json.loads(response)['access_token']
+        response = connection.getresponse()
+        code = response.status
+        body = response.read().decode()
+        if code == 401:  # Bad API key...
+            raise CloudPassageAuthentication(json.dumps(body))
+        self.api_token = json.loads(body)['access_token']
         return True
 
     @classmethod
@@ -66,6 +71,16 @@ class HaloSession(object):
         auth_string = "Basic {creds}".format(creds=creds)
         auth_header = {"Authorization": auth_string}
         return auth_header
+
+    def build_header(self):
+        """This builds the header, required for all API interaction."""
+        if self.api_token is None:
+            self.authenticate()
+        authstring = "Bearer " + self.api_token
+        header = {"Authorization": authstring,
+                  "Content-Type": "application/json",
+                  "User-Agent": self.user_agent}
+        return header
 
     @classmethod
     def build_ua_string(cls, sdk_version_str, integration_string):
