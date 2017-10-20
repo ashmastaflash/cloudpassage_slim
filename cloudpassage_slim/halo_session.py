@@ -67,6 +67,14 @@ class HaloSession(object):
         auth_header = {"Authorization": auth_string}
         return auth_header
 
+    def build_header(self):
+        """This builds the header, required for all API interaction."""
+        authstring = "Bearer " + self.api_token
+        header = {"Authorization": authstring,
+                  "Content-Type": "application/json",
+                  "User-Agent": self.user_agent}
+        return header
+
     @classmethod
     def build_ua_string(cls, sdk_version_str, integration_string):
         ua = "{sdk} {integration}".format(sdk=sdk_version_str,
