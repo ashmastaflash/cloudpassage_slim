@@ -2,8 +2,6 @@ import httplib
 import json
 import time
 import urllib
-# import utility
-# from exceptions import CloudPassageAuthentication
 from exceptions import CloudPassageAuthorization
 from exceptions import CloudPassageGeneral
 from exceptions import CloudPassageResourceExistence
