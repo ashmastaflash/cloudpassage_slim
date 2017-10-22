@@ -39,7 +39,7 @@ class HaloSession(object):
             self.integration_string = kwargs["integration_string"]
         self.user_agent = self.build_ua_string(self.sdk_version_string,
                                                self.integration_string)
-        self.threads = 5
+        self.threads = 10
         self.api_token = None
 
     def authenticate(self):

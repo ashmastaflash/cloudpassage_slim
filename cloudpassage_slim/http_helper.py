@@ -1,8 +1,7 @@
 import httplib
+import json
 import time
 import urllib
-# import utility
-from exceptions import CloudPassageAuthentication
 from exceptions import CloudPassageAuthorization
 from exceptions import CloudPassageGeneral
 from exceptions import CloudPassageResourceExistence
@@ -60,7 +59,7 @@ class HttpHelper(object):
                 break
         if exc:
             raise exc  # This catches the fails beyond retries.
-        return body
+        return json.loads(body)
 
     @classmethod
     def response_disposition(cls, response_code, url, resp_text):
