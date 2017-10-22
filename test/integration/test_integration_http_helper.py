@@ -11,6 +11,8 @@ sys.path.append(module_path)
 fp, pathname, description = imp.find_module(module_name)
 cloudpassage_slim = imp.load_module(module_name, fp, pathname, description)
 
+fixture_path = os.path.join(here_dir, "../fixtures")
+
 
 class TestIntegrationHttpHelper(object):
     def get_halo_session(self):
@@ -18,6 +20,19 @@ class TestIntegrationHttpHelper(object):
         halo_secret = os.getenv("HALO_API_SECRET")
         if None not in [halo_key, halo_secret]:
             session = cloudpassage_slim.HaloSession(halo_key, halo_secret)
+        else:
+            print("No API authentication env vars set!")
+            print("You must set HALO_API_KEY, HALO_API_SECRET to test this!")
+            raise ValueError
+        return session
+
+    def get_halo_session_with_my_certs(self):
+        halo_key = os.getenv("HALO_API_KEY")
+        halo_secret = os.getenv("HALO_API_SECRET")
+        cert_file = os.path.join(fixture_path, "cacert.pem")
+        if None not in [halo_key, halo_secret]:
+            session = cloudpassage_slim.HaloSession(halo_key, halo_secret,
+                                                    cert_file=cert_file)
         else:
             print("No API authentication env vars set!")
             print("You must set HALO_API_KEY, HALO_API_SECRET to test this!")
@@ -68,6 +83,12 @@ class TestIntegrationHttpHelper(object):
     def test_http_helper_force_rekey(self):
         session = self.get_halo_session()
         session.api_token = "oldkey"
+        http_helper = self.get_http_helper(session)
+        path = "/v1/servers/"
+        assert http_helper.get(path)
+
+    def test_http_helper_with_my_certs(self):
+        session = self.get_halo_session_with_my_certs()
         http_helper = self.get_http_helper(session)
         path = "/v1/servers/"
         assert http_helper.get(path)
