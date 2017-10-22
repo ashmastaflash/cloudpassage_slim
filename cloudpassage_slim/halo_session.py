@@ -98,7 +98,6 @@ class HaloSession(object):
         here_dir = os.path.abspath(os.path.dirname(__file__))
         init_file_path = os.path.join(here_dir, "__init__.py")
         raw_init_file = open(init_file_path).read()
-        print raw_init_file
         rx_compiled = re.compile(r"\s*__version__\s*=\s*\"(\S+)\"")
         version = rx_compiled.search(raw_init_file).group(1)
         return version

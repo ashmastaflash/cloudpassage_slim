@@ -1,5 +1,6 @@
 import httplib
 import json
+import ssl
 import time
 import urllib
 from exceptions import CloudPassageAuthorization
@@ -21,7 +22,12 @@ class HttpHelper(object):
             params = urllib.urlencode(dict(kwargs["params"]))
         if "headers" in kwargs:
             headers = kwargs["headers"]
-        conn = httplib.HTTPSConnection(host)
+        if "cert_file" in kwargs:
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ctx.load_verify_locations(kwargs["cert_file"])
+            conn = httplib.HTTPSConnection(host, context=ctx)
+        else:
+            conn = httplib.HTTPSConnection(host)
         conn.request(method, path, params, headers)
         response = conn.getresponse()
         status_code = response.status
@@ -37,10 +43,18 @@ class HttpHelper(object):
             params = kwargs["params"]
         while tries < 3:
             headers = self.session.build_header()
-            status_code, reason, body = self.connect("GET",
-                                                     self.session.api_host,
-                                                     path, headers=headers,
-                                                     params=params)
+            if self.session.cert_file is not None:
+                cert_file = self.session.cert_file
+                status_code, reason, body = self.connect("GET",
+                                                         self.session.api_host,
+                                                         path, headers=headers,
+                                                         params=params,
+                                                         cert_file=cert_file)
+            else:
+                status_code, reason, body = self.connect("GET",
+                                                         self.session.api_host,
+                                                         path, headers=headers,
+                                                         params=params)
             disposition, exc = self.response_disposition(status_code, path,
                                                          reason)
             if disposition == "rekey":
