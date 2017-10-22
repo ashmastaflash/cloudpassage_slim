@@ -135,11 +135,8 @@ class TimeSeries(object):
         Returns:
             int: Number of ampty pages from query.
         """
-        empty_pages = 0
-        for page in pages:
-            if page[item_key] == []:
-                empty_pages += 1
-        return empty_pages
+        empty = [page for page in pages if page[item_key] == []]
+        return len(empty)
 
     @classmethod
     def get_number_of_full_pages(cls, pages, page_size, item_key):
