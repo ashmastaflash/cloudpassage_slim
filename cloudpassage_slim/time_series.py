@@ -167,9 +167,6 @@ class TimeSeries(object):
             list: List of items, extracted from pages using item_key, and
                 sorted by sort_key.
         """
-        items = []
-        for page in pages:
-            for item in page[item_key]:
-                items.append(item)
+        items = [item for items in pages for item in items[item_key]]
         result = sorted(items, key=operator.itemgetter(sort_key))
         return result
