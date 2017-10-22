@@ -1,5 +1,7 @@
 import operator
 import time
+from http_helper import HttpHelper
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 class TimeSeries(object):
@@ -12,15 +14,18 @@ class TimeSeries(object):
         item_key(str): Top-level key, below which is a list of target items.
         params(dict): Parameters for URL, which will be URL-encoded.
     """
-    def __init__(self, session, start_time, start_url, item_key, params=""):
+    def __init__(self, session, start_time, start_url, item_key, params={}):
         self.start_time = start_time
         self.url = start_url
         self.params = params
+        self.start_url = start_url
         self.batch_size = 10
+        self.page_size = 50
         self.session = session
         self.max_threads = self.session.threads
         self.item_key = item_key
         self.sort_key = "created_at"
+        self.last_item_id = None
         return
 
     def __iter__(self):
@@ -66,7 +71,6 @@ class TimeSeries(object):
         """
         url_list = []
         for page in range(1, batch_size + 1):
-            url = None
             params["page"] = page
             url = (path, dict(params))
             url_list.append(url)
@@ -101,7 +105,8 @@ class TimeSeries(object):
 
     def get_next_batch(self):
         """Gets the next batch of time-series items from the Halo API"""
-        url_list = self.create_url_list()
+        url_list = self.create_url_batch(self.start_url, self.batch_size,
+                                         self.params)
         pages = self.get_pages(url_list)
         adjustment_factor = self.get_adjustment_factor(pages, self.page_size,
                                                        self.item_key)
@@ -153,6 +158,29 @@ class TimeSeries(object):
         full = [page for page in pages if len(page[item_key]) == page_size]
         return len(full)
 
+    def get_pages(self, url_list):
+        """Map URLs to threads, return all when complete"""
+        page_helper = self.get_page
+        pool = ThreadPool(self.max_threads)
+        results = pool.map(page_helper, url_list)
+        pool.close()
+        pool.join()
+        return results
+
+    def get_page(self, get_tup):
+        """Gets one page's contents.
+
+        Args:
+            get_tup(tuple): First item in tuple is a string, the URL.  The
+                second item is the params to be used in the query.
+
+        Returns:
+            dict: Page contents as dict
+        """
+        helper = HttpHelper(self.session)
+        results = helper.get(get_tup[0], params=get_tup[1])
+        return results
+
     @classmethod
     def sorted_items_from_pages(cls, pages, item_key, sort_key):
         """Return all items, sorted by specific key.
@@ -167,6 +195,8 @@ class TimeSeries(object):
             list: List of items, extracted from pages using item_key, and
                 sorted by sort_key.
         """
-        items = [item for items in pages for item in items[item_key]]
+        items = []
+        for page in pages:
+            items.extend(page[item_key])
         result = sorted(items, key=operator.itemgetter(sort_key))
         return result
