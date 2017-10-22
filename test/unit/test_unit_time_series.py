@@ -44,3 +44,98 @@ class TestUnitTimeSeries(object):
             count += 1
             assert item["item_number"] == count
         assert count == 4
+
+    def test_unit_time_series_get_number_of_empty_pages(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"},
+                    {"item_number": 4,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": []}
+        pages = [page1, page2]
+        pkey = "whatevers"
+        expected = 1
+        actual = cloudpassage_slim.TimeSeries.get_number_of_empty_pages(pages,
+                                                                        pkey)
+        assert expected == actual
+
+    def test_unit_time_series_get_number_of_full_pages(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"},
+                    {"item_number": 4,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": []}
+        pages = [page1, page2]
+        pkey = "whatevers"
+        expected = 1
+        actual = cloudpassage_slim.TimeSeries.get_number_of_full_pages(pages,
+                                                                       2,
+                                                                       pkey)
+        assert expected == actual
+
+    def test_unit_time_series_get_adjustment_factor_zero(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"},
+                    {"item_number": 4,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": [
+                    {"item_number": 2,
+                     "nonsort": "somesuch"}]}
+        pages = [page1, page2]
+        pkey = "whatevers"
+        expected = 0
+        actual = cloudpassage_slim.TimeSeries.get_adjustment_factor(pages, 2,
+                                                                    pkey)
+        assert expected == actual
+
+    def test_unit_time_series_get_adjustment_factor_up_one(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"},
+                    {"item_number": 4,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": [
+                    {"item_number": 2,
+                     "nonsort": "somesuch"},
+                    {"item_number": 3,
+                     "nonsort": "somesuch"}]}
+        pages = [page1, page2]
+        pkey = "whatevers"
+        expected = 1
+        actual = cloudpassage_slim.TimeSeries.get_adjustment_factor(pages, 2,
+                                                                    pkey)
+        assert expected == actual
+
+    def test_unit_time_series_get_adjustment_factor_down_one(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"},
+                    {"item_number": 4,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": [
+                    {"item_number": 2,
+                     "nonsort": "somesuch"},
+                    {"item_number": 3,
+                     "nonsort": "somesuch"}]}
+        page3 = {"whatevers": []}
+        pages = [page1, page2, page3]
+        pkey = "whatevers"
+        expected = -1
+        actual = cloudpassage_slim.TimeSeries.get_adjustment_factor(pages, 2,
+                                                                    pkey)
+        assert expected == actual
+
+    def test_unit_time_series_get_adjustment_factor_big_drop(self):
+        page1 = {"whatevers": [
+                    {"item_number": 1,
+                     "nonsort": "somesuch"}]}
+        page2 = {"whatevers": []}
+        page3 = {"whatevers": []}
+        pages = [page1, page2, page3]
+        pkey = "whatevers"
+        expected = -9
+        actual = cloudpassage_slim.TimeSeries.get_adjustment_factor(pages, 2,
+                                                                    pkey)
+        assert expected == actual
