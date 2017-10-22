@@ -153,11 +153,8 @@ class TimeSeries(object):
         Returns:
             int: Number of full pages in query.
         """
-        full_pages = 0
-        for page in pages:
-            if len(page[item_key]) == page_size:
-                full_pages += 1
-        return full_pages
+        full = [page for page in pages if len(page[item_key]) == page_size]
+        return len(full)
 
     @classmethod
     def sorted_items_from_pages(cls, pages, item_key, sort_key):
