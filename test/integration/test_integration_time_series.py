@@ -23,7 +23,7 @@ class TestIntegrationTimeSeries(object):
             raise ValueError
         return session
 
-    def test_time_series_iter_events_5_pages(self):
+    def test_time_series_iter_events_many_pages(self):
         session = self.get_halo_session()
         start_time = "2017-10-01"
         start_url = "/v1/events"
@@ -31,9 +31,12 @@ class TestIntegrationTimeSeries(object):
         event_streamer = cloudpassage_slim.TimeSeries(session, start_time,
                                                       start_url, item_key)
         event_counter = 0
+        event_ids = set([])
         for event in event_streamer:
-            print event["message"]
+            print("%s -- %s" % (event["id"], event["created_at"]))
             assert "id" in event
+            assert event["id"] not in event_ids
+            event_ids.add(event["id"])
             event_counter += 1
-            if event_counter > 600:
+            if event_counter > 60:
                 break

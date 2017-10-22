@@ -15,7 +15,6 @@ class TimeSeries(object):
         params(dict): Parameters for URL, which will be URL-encoded.
     """
     def __init__(self, session, start_time, start_url, item_key, params={}):
-        self.start_time = start_time
         self.url = start_url
         self.params = params
         self.start_url = start_url
@@ -26,6 +25,8 @@ class TimeSeries(object):
         self.item_key = item_key
         self.sort_key = "created_at"
         self.last_item_id = None
+        self.params["since"] = start_time
+        self.params["per_page"] = self.page_size
         return
 
     def __iter__(self):
@@ -105,6 +106,7 @@ class TimeSeries(object):
 
     def get_next_batch(self):
         """Gets the next batch of time-series items from the Halo API"""
+        print("Params: %s" % self.params)
         url_list = self.create_url_batch(self.start_url, self.batch_size,
                                          self.params)
         pages = self.get_pages(url_list)
@@ -113,6 +115,7 @@ class TimeSeries(object):
         self.adjust_batch_size(adjustment_factor)
         items = self.sorted_items_from_pages(pages, self.item_key,
                                              self.sort_key)
+        items = self.remove_duplicate_items(items)
         try:
             if items[0]["id"] == self.last_item_id:
                 del items[0]
@@ -120,12 +123,16 @@ class TimeSeries(object):
             time.sleep(3)
             return []
         try:
+            # last_item_timestamp = items[-1]['created_at']
             last_item_timestamp = items[-1]['created_at']
             last_item_id = items[-1]['id']
         except IndexError:
             time.sleep(3)
             return []
-        self.last_item_timestamp = last_item_timestamp
+        # self.last_item_timestamp = last_item_timestamp
+        # self.start_time = last_item_timestamp
+        print("Last item timestamp: %s" % last_item_timestamp)
+        self.params["since"] = last_item_timestamp
         self.last_item_id = last_item_id
         return items
 
@@ -178,8 +185,31 @@ class TimeSeries(object):
             dict: Page contents as dict
         """
         helper = HttpHelper(self.session)
-        results = helper.get(get_tup[0], params=get_tup[1])
+        path, params = get_tup[0], get_tup[1]
+        print get_tup
+        params_str = ""
+        for param in params.items():
+            append_this = "%s=%s" % (param[0], param[1])
+            if params_str == "":
+                params_str = append_this
+            else:
+                params_str = params_str + ("&%s" % append_this)
+        url = ("{path}?{params}".format(path=path, params=params_str))
+        results = helper.get(url)
         return results
+
+    @classmethod
+    def remove_duplicate_items(cls, items_in):
+        """Remove duplicate items by id."""
+        items_out = []
+        item_ids = set([])
+        for item in items_in:
+            if item["id"] not in item_ids:
+                item_ids.add(item["id"])
+                items_out.append(item)
+            else:
+                continue
+        return items_out
 
     @classmethod
     def sorted_items_from_pages(cls, pages, item_key, sort_key):
