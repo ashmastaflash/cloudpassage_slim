@@ -106,7 +106,6 @@ class TimeSeries(object):
 
     def get_next_batch(self):
         """Gets the next batch of time-series items from the Halo API"""
-        print("Params: %s" % self.params)
         url_list = self.create_url_batch(self.start_url, self.batch_size,
                                          self.params)
         pages = self.get_pages(url_list)
@@ -129,9 +128,6 @@ class TimeSeries(object):
         except IndexError:
             time.sleep(3)
             return []
-        # self.last_item_timestamp = last_item_timestamp
-        # self.start_time = last_item_timestamp
-        print("Last item timestamp: %s" % last_item_timestamp)
         self.params["since"] = last_item_timestamp
         self.last_item_id = last_item_id
         return items
@@ -186,7 +182,6 @@ class TimeSeries(object):
         """
         helper = HttpHelper(self.session)
         path, params = get_tup[0], get_tup[1]
-        print get_tup
         params_str = ""
         for param in params.items():
             append_this = "%s=%s" % (param[0], param[1])

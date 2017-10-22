@@ -28,7 +28,6 @@ class HttpHelper(object):
             conn = httplib.HTTPSConnection(host, context=ctx)
         else:
             conn = httplib.HTTPSConnection(host)
-        print("%s %s" % (path, params))
         conn.request(method, path, params, headers)
         response = conn.getresponse()
         status_code = response.status
