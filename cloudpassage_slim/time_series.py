@@ -1,5 +1,6 @@
 import operator
 import time
+import urllib
 from http_helper import HttpHelper
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -122,7 +123,6 @@ class TimeSeries(object):
             time.sleep(3)
             return []
         try:
-            # last_item_timestamp = items[-1]['created_at']
             last_item_timestamp = items[-1]['created_at']
             last_item_id = items[-1]['id']
         except IndexError:
@@ -181,15 +181,9 @@ class TimeSeries(object):
             dict: Page contents as dict
         """
         helper = HttpHelper(self.session)
-        path, params = get_tup[0], get_tup[1]
-        params_str = ""
-        for param in params.items():
-            append_this = "%s=%s" % (param[0], param[1])
-            if params_str == "":
-                params_str = append_this
-            else:
-                params_str = params_str + ("&%s" % append_this)
-        url = ("{path}?{params}".format(path=path, params=params_str))
+        path, args = get_tup[0], get_tup[1]
+        url = "{path}?{opts}".format(path=path,
+                                     opts=urllib.urlencode(dict(args)))
         results = helper.get(url)
         return results
 

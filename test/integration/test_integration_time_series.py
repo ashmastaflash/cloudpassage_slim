@@ -33,7 +33,6 @@ class TestIntegrationTimeSeries(object):
         event_counter = 0
         event_ids = set([])
         for event in event_streamer:
-            print("%s -- %s" % (event["id"], event["created_at"]))
             assert "id" in event
             assert event["id"] not in event_ids
             event_ids.add(event["id"])

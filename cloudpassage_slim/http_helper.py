@@ -17,7 +17,7 @@ class HttpHelper(object):
     @classmethod
     def connect(self, method, host, path, **kwargs):
         """Return a tuple of response code, reason, and page body."""
-        headers, params = {}, {}
+        headers, params = {}, ""
         if "params" in kwargs:
             params = urllib.urlencode(dict(kwargs["params"]))
         if "headers" in kwargs:
