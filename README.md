@@ -1,6 +1,8 @@
 # cloudpassage_slim
 ## A pure-python zero-dependency API abstraction for CloudPassage Halo
 
+[![Build Status](https://travis-ci.org/ashmastaflash/cloudpassage_slim.svg?branch=master)](https://travis-ci.org/ashmastaflash/cloudpassage_slim)
+
 Prototype.
 
 ### Usage
